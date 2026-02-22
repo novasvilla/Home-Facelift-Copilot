@@ -9,7 +9,7 @@ const CARD_COLORS = [
   { bg: 'bg-stone-50', border: 'border-stone-200', accent: 'text-stone-700', badge: 'bg-stone-700' },
 ];
 
-export default function AlternativeCarousel({ alternatives, artifacts, onSelect, originalImages = [] }) {
+export default function AlternativeCarousel({ alternatives = [], artifacts = [], onSelect, originalImages = [] }) {
   const scrollRef = useRef(null);
   const [expanded, setExpanded] = useState(null);
   const [zoomedImage, setZoomedImage] = useState(null);
@@ -33,7 +33,7 @@ export default function AlternativeCarousel({ alternatives, artifacts, onSelect,
   return (
     <div className="relative">
       {/* Navigation arrows - desktop only */}
-      {alternatives.length > 2 && (
+      {alternatives?.length > 2 && (
         <>
           <button
             onClick={() => scroll('left')}
@@ -66,7 +66,7 @@ export default function AlternativeCarousel({ alternatives, artifacts, onSelect,
         className="carousel-scroll flex gap-4 overflow-x-auto pb-3 px-1"
       >
         {/* Original image card */}
-        {originalImages.length > 0 && (
+        {originalImages?.length > 0 && (
           <div className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[320px] rounded-xl border-2 overflow-hidden border-amber-300 bg-amber-50">
             <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setZoomedImage(originalImages[0])}>
               <img src={originalImages[0]} alt="Original" className="w-full h-full object-cover" />
@@ -87,7 +87,7 @@ export default function AlternativeCarousel({ alternatives, artifacts, onSelect,
           </div>
         )}
 
-        {alternatives.map((alt, idx) => {
+        {alternatives?.map((alt, idx) => {
           const colors = CARD_COLORS[idx] || CARD_COLORS[0];
           const artifact = getArtifactForIndex(idx);
           const isExpanded = expanded === idx;
@@ -166,7 +166,7 @@ export default function AlternativeCarousel({ alternatives, artifacts, onSelect,
 
       {/* Dot indicators for mobile */}
       <div className="flex justify-center gap-1.5 mt-2 md:hidden">
-        {alternatives.map((_, idx) => (
+        {alternatives?.map((_, idx) => (
           <div
             key={idx}
             className={`w-1.5 h-1.5 rounded-full ${
