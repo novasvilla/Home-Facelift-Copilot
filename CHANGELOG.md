@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-02-22
+
+### Added — On-Demand Consistency Check, Deployment to Cloud Run
+
+**On-Demand Consistency Verification:**
+- `verify_consistency` tool in `tools.py`: async function to check generated images vs original on demand
+- UI button "🔍 Verificar consistencia" in `AlternativeCarousel.jsx` for each alternative
+- `handleVerifyConsistency` in `ChatPanel.jsx` sends request to backend tool
+- Tool registered in both `exterior_designer` and `interior_designer` agents
+- Consistency check no longer runs automatically (saving 30-60 seconds per generation)
+- User can verify any alternative (A, B, C) or all at once
+
+**Cloud Run Deployment:**
+- Successfully deployed to: **https://facelift-copilot-291132514162.europe-west1.run.app**
+- Docker build with multi-stage (frontend + backend)
+- 2Gi memory, 2 vCPU, 300s timeout, max 10 instances
+- Environment: `gemini-3-flash-preview` (text), `gemini-3-pro-image-preview` (images)
+- Region: `europe-west1`
+
+**Frontend Persistence Improvements:**
+- `ChatPanel.jsx`: Exclude base64 images from localStorage to prevent quota errors
+- Remove corrupted localStorage entries automatically on failure
+- Persist only message text + artifacts (not image data)
+
+**Frontend Crash Fixes:**
+- `AlternativeCarousel.jsx`: Safe arrays (`safeAlternatives`, `safeArtifacts`, `safeOriginals`)
+- Removed optional chaining (`?.`) in JSX to prevent Babel parse errors
+- Fixed `React.memo` syntax error (missing closing `}`)
+
+### Changed
+- `app/tools.py`: `analyze_and_propose` stores `primary_image` and `generated_images` map in state
+- `app/tools.py`: Removed automatic consistency check from main flow
+- `app/prompts.py`: Added instruction to use `verify_consistency` tool on user request
+- `app/agent.py`: Registered `verify_consistency` in both designer agents
+- `frontend/src/components/ChatPanel.jsx`: Added `onVerifyAlternative` handler and prop
+- `frontend/src/components/AlternativeCarousel.jsx`: Added `onVerify` prop and consistency button
+
+### Fixed
+- Frontend white screen crash when sending multiple photos (localStorage quota exceeded)
+- Babel parse error due to optional chaining in JSX
+- React.memo wrapper syntax error in `ChatPanel.jsx`
+
 ## [1.3.0] - 2026-02-22
 
 ### Added — Deployment, Frontend Persistence, UX Improvements
