@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-02-22
+
+### Added — Deployment, Frontend Persistence, UX Improvements
+
+**GitHub Repository + Deployment Infrastructure:**
+- Created public GitHub repo: **https://github.com/novasvilla/Home-Facelift-Copilot**
+- `Dockerfile`: Multi-stage build (Node 20 for frontend, Python 3.11 for backend)
+- `.github/workflows/deploy.yml`: GitHub Actions workflow for automated Cloud Run deployment
+- `.dockerignore`: Optimized Docker context (excludes node_modules, .venv, tests, etc.)
+
+**Frontend: Conversation Persistence per Section:**
+- `ChatPanel.jsx`: Conversations, artifacts, and originalImages now persist to `localStorage`
+  per section using key `facelift_chat_{userId}_{sessionId}`.
+- On section switch or page reload, the full chat history and artifacts are restored.
+- User can see all previous alternatives and continue conversations seamlessly.
+
+**Frontend: Show ALL Uploaded Photos:**
+- `ChatPanel.jsx`: `originalImages` state now stores ALL uploaded photos from current turn (not just first).
+- Each turn replaces `originalImages` array instead of appending (prevents accumulation bug).
+- `AlternativeCarousel.jsx`: Displays all original photos as thumbnails.
+
+**Limit to Exactly 3 Alternatives (No More, No Less):**
+- `tools.py`: Force limit `image_prompts = image_prompts[:3]` after AI generation.
+- Prevents the 4th or 5th spurious alternatives from appearing.
+
+**Bathroom Design: Default Black Faucets (RAL 9005):**
+- `tools.py` + `prompts.py`: Griferías baño → por defecto NEGRO mate RAL 9005 (tendencia 2026).
+- Interior Designer prompt explicitly states black faucets are the default for modern luxury.
+
+**Paint Rule Clarification:**
+- **Old rule**: "If ceiling/walls in good condition → KEEP"
+- **New rule**: "Evaluate. If painting adds WOW value → DO IT. But ALWAYS same color walls+ceiling."
+- REGLA CRÍTICA: If walls painted gray → ceiling also gray. NEVER white ceiling + colored walls.
+- Floors/parquet in good condition → ALWAYS KEEP (never change).
+
+### Changed
+- `app/tools.py`: Updated `_ai_generate_cds_alternatives()` with new paint rule and black faucets default.
+  `analyze_and_propose()` forces max 3 image prompts.
+- `app/prompts.py`: Interior Designer instruction updated with paint rule and black faucets.
+- `frontend/src/components/ChatPanel.jsx`: localStorage persistence, originalImages fix.
+- `frontend/src/lib/*.js`: All lib files now force-committed (were gitignored by `lib/` pattern).
+
+### Fixed
+- `lib/` gitignore pattern was blocking frontend library files from being committed.
+
 ## [1.2.0] - 2026-02-22
 
 ### Added — GCS Image Storage, "Don't Fix What's Good" Guardrails, Bug Fixes
