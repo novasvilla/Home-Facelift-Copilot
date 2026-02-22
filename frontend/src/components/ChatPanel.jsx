@@ -465,7 +465,7 @@ const MessageBubble = React.memo(function MessageBubble({
       </div>
     </div>
   );
-}
+});
 
 function getSectionIcon(type) {
   const icons = {
