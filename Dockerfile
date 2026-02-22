@@ -10,14 +10,14 @@ RUN npm run build
 # Backend runtime
 FROM python:3.11-slim
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
-
 WORKDIR /app
+
+# Install uv
+RUN pip install --no-cache-dir uv
 
 # Copy backend dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen
+RUN uv sync --frozen --no-cache
 
 # Copy backend code
 COPY app/ ./app/
