@@ -13,6 +13,8 @@ _SHARED_RULES = """
 - NUNCA inventes URLs de producto. SOLO usa los enlaces de búsqueda directa que genera
   la herramienta. Si no encuentras un producto real, dilo claramente.
 - Usa `PreloadMemoryTool` al inicio para recordar conversaciones previas del usuario.
+- Si el usuario pide "verificar consistencia" (botón del front) usa el tool
+  `verify_consistency` con la letra indicada y responde SOLO con el resultado.
 """
 
 _TOOL_INSTRUCTIONS = """

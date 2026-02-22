@@ -223,6 +223,10 @@ export default function ChatPanel({ project, section }) {
     sendMsg(`Me gusta la alternativa ${letter}. Genera el plan refinado con esa opción.`, []);
   };
 
+  const handleVerifyConsistency = (letter) => {
+    sendMsg(`Verifica la consistencia de la alternativa ${letter}`, []);
+  };
+
   const handleRequestShoppingList = () => {
     sendMsg('Genera la lista de compra completa con todos los materiales y herramientas del plan.', []);
   };
@@ -282,6 +286,7 @@ export default function ChatPanel({ project, section }) {
             artifacts={artifacts}
             originalImages={originalImages}
             onSelectAlternative={handleSelectAlternative}
+            onVerifyAlternative={handleVerifyConsistency}
           />
         ))}
 
@@ -357,7 +362,13 @@ export default function ChatPanel({ project, section }) {
   );
 }
 
-function MessageBubble({ message, artifacts, originalImages, onSelectAlternative }) {
+const MessageBubble = React.memo(function MessageBubble({
+  message,
+  artifacts,
+  originalImages,
+  onSelectAlternative,
+  onVerifyAlternative,
+}) {
   const isUser = message.role === 'user';
   const showAlternatives = !isUser && hasAlternatives(message.text);
   const alternatives = showAlternatives ? parseAlternatives(message.text) : [];
@@ -418,6 +429,7 @@ function MessageBubble({ message, artifacts, originalImages, onSelectAlternative
               artifacts={artifacts}
               originalImages={originalImages}
               onSelect={onSelectAlternative}
+              onVerify={onVerifyAlternative}
             />
             {/* Show full text below the carousel */}
             <details className="mt-3">

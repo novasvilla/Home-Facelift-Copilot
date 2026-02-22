@@ -9,7 +9,7 @@ const CARD_COLORS = [
   { bg: 'bg-stone-50', border: 'border-stone-200', accent: 'text-stone-700', badge: 'bg-stone-700' },
 ];
 
-export default function AlternativeCarousel({ alternatives = [], artifacts = [], onSelect, originalImages = [] }) {
+export default function AlternativeCarousel({ alternatives = [], artifacts = [], onSelect, onVerify, originalImages = [] }) {
   const safeAlternatives = Array.isArray(alternatives) ? alternatives : [];
   const safeArtifacts = Array.isArray(artifacts) ? artifacts : [];
   const safeOriginals = Array.isArray(originalImages) ? originalImages : [];
@@ -146,20 +146,30 @@ export default function AlternativeCarousel({ alternatives = [], artifacts = [],
                   </div>
                 )}
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onSelect(alt.letter)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 ${colors.badge} text-white text-xs font-medium py-2 rounded-lg hover:opacity-90 transition-opacity`}
-                  >
-                    <Check size={14} />
-                    Elegir {alt.letter}
-                  </button>
-                  <button
-                    onClick={() => setExpanded(isExpanded ? null : idx)}
-                    className="text-xs text-gray-400 hover:text-gray-600 px-2 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                  >
-                    {isExpanded ? 'Menos' : 'Más'}
-                  </button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onSelect(alt.letter)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 ${colors.badge} text-white text-xs font-medium py-2 rounded-lg hover:opacity-90 transition-opacity`}
+                    >
+                      <Check size={14} />
+                      Elegir {alt.letter}
+                    </button>
+                    <button
+                      onClick={() => setExpanded(isExpanded ? null : idx)}
+                      className="text-xs text-gray-400 hover:text-gray-600 px-2 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                    >
+                      {isExpanded ? 'Menos' : 'Más'}
+                    </button>
+                  </div>
+                  {onVerify && (
+                    <button
+                      onClick={() => onVerify(alt.letter)}
+                      className="w-full text-xs text-blue-600 hover:text-blue-800 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
+                    >
+                      🔍 Verificar consistencia
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

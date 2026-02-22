@@ -178,6 +178,49 @@ def _consistency_check(original_path: str, generated_path: str) -> dict:
         return {"passed": True, "score": -1, "issues": [f"Check error: {e}"]}
 
 
+async def verify_consistency(alternative: str, tool_context: ToolContext) -> str:
+    """On-demand consistency check triggered from the UI via verify_consistency tool."""
+    letter = (alternative or "").strip().upper() or "TODAS"
+    generated = tool_context.state.get("generated_images") or {}
+    primary = tool_context.state.get("primary_image")
+
+    if not primary:
+        return "No hay imagen original disponible para comparar. Sube una foto nuevamente."
+    if not generated:
+        return "Todavía no se han generado imágenes en esta sesión."
+
+    if letter in {"TODAS", "ALL", "*"}:
+        targets = sorted(generated.keys())
+    else:
+        if letter not in generated:
+            return f"No existe la alternativa {letter} o aún no se generó."
+        targets = [letter]
+
+    lines = ["## 🔍 Verificación de Consistencia"]
+    for lt in targets:
+        path = generated.get(lt)
+        if not path or not os.path.exists(path):
+            lines.append(f"- Alternativa {lt}: ⚠️ No se encontró la imagen generada.")
+            continue
+        check = _consistency_check(primary, path)
+        score = check["score"]
+        if check["passed"]:
+            lines.append(
+                f"- Alternativa {lt}: ✅ Score {score}/100. Solo cambios cosméticos permitidos."
+            )
+        else:
+            issues = check["issues"] or ["El modelo no devolvió detalles."]
+            issues_text = "; ".join(issues[:4])
+            lines.append(
+                f"- Alternativa {lt}: ⚠️ Score {score}/100 → {issues_text}"
+            )
+
+    lines.append(
+        "\n*Consejo:* Ajusta la alternativa que falle y vuelve a generar antes de compartirla."
+    )
+    return "\n".join(lines)
+
+
 # ─── Tools for ProductFinder sub-agent ────────────────────────────────────────
 
 
@@ -694,6 +737,7 @@ async def analyze_and_propose(tool_context: ToolContext) -> str:
 
     # Step 4: Generate preview images in parallel (use first image as base)
     primary_image = uploaded_images[0]
+    tool_context.state["primary_image"] = primary_image
     logger.info("FASE 1.4: Generando %d imágenes preview...", len(image_prompts))
     tasks = [_generate_image(p, primary_image, tool_context) for p in image_prompts]
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -712,39 +756,16 @@ async def analyze_and_propose(tool_context: ToolContext) -> str:
             m = re.search(r"Local file.*?`(.+?)`", result)
             generated_paths.append(m.group(1) if m else None)
 
-    # Step 5: Consistency check — verify generated images vs original
-    logger.info("FASE 1.5: Verificación de consistencia GenAI...")
-    consistency_status = []
-    for idx, gen_path in enumerate(generated_paths):
+    # Store generated paths for optional consistency checks
+    generated_map = {}
+    for idx, path in enumerate(generated_paths):
         letter = chr(65 + idx)
-        if not gen_path or not os.path.exists(gen_path):
-            continue
-        check = _consistency_check(primary_image, gen_path)
-        score = check["score"]
-        if check["passed"]:
-            consistency_status.append(
-                f"**Consistencia {letter}**: ✅ Score {score}/100"
-            )
-            logger.info("Consistency %s: PASSED (score=%d)", letter, score)
-        else:
-            issues_text = "; ".join(check["issues"][:3])
-            consistency_status.append(
-                f"**Consistencia {letter}**: ⚠️ Score {score}/100 — {issues_text}"
-            )
-            logger.warning(
-                "Consistency %s: FAILED (score=%d) issues=%s",
-                letter,
-                score,
-                check["issues"],
-            )
+        if path and os.path.exists(path):
+            generated_map[letter] = path
+    if generated_map:
+        tool_context.state["generated_images"] = generated_map
 
-    consistency_section = ""
-    if consistency_status:
-        consistency_section = (
-            "\n\n## 🔍 Verificación de Consistencia\n\n"
-            + "\n".join(consistency_status)
-            + "\n"
-        )
+    consistency_section = "\n\n*Puedes verificar la consistencia de cada alternativa con el botón 'Verificar consistencia' en la interfaz.*"
 
     return (
         f"{alternatives}\n\n---\n\n"

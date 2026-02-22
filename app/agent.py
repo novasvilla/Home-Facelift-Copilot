@@ -34,6 +34,7 @@ from app.tools import (
     analyze_and_propose,
     refine_and_generate,
     search_products,
+    verify_consistency,
 )
 from app import memory_store
 from app import gcs_storage
@@ -187,6 +188,7 @@ exterior_designer = Agent(
         analyze_and_propose,
         refine_and_generate,
         search_products,
+        verify_consistency,
         preload_memory_tool.PreloadMemoryTool(),
     ],
     before_model_callback=_persist_uploaded_images,
@@ -205,6 +207,7 @@ interior_designer = Agent(
         analyze_and_propose,
         refine_and_generate,
         search_products,
+        verify_consistency,
         preload_memory_tool.PreloadMemoryTool(),
     ],
     before_model_callback=_persist_uploaded_images,
