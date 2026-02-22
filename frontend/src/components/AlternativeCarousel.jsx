@@ -10,6 +10,9 @@ const CARD_COLORS = [
 ];
 
 export default function AlternativeCarousel({ alternatives = [], artifacts = [], onSelect, originalImages = [] }) {
+  const safeAlternatives = Array.isArray(alternatives) ? alternatives : [];
+  const safeArtifacts = Array.isArray(artifacts) ? artifacts : [];
+  const safeOriginals = Array.isArray(originalImages) ? originalImages : [];
   const scrollRef = useRef(null);
   const [expanded, setExpanded] = useState(null);
   const [zoomedImage, setZoomedImage] = useState(null);
@@ -25,15 +28,15 @@ export default function AlternativeCarousel({ alternatives = [], artifacts = [],
 
   // Match artifacts to alternatives by order (A=0, B=1, C=2)
   const getArtifactForIndex = (idx) => {
-    if (!artifacts || artifacts.length === 0) return null;
+    if (!safeArtifacts.length) return null;
     // Artifacts arrive in order A, B, C
-    return artifacts[idx] || null;
+    return safeArtifacts[idx] || null;
   };
 
   return (
     <div className="relative">
       {/* Navigation arrows - desktop only */}
-      {alternatives?.length > 2 && (
+      {safeAlternatives.length > 2 && (
         <>
           <button
             onClick={() => scroll('left')}
@@ -66,19 +69,19 @@ export default function AlternativeCarousel({ alternatives = [], artifacts = [],
         className="carousel-scroll flex gap-4 overflow-x-auto pb-3 px-1"
       >
         {/* Original image card */}
-        {originalImages?.length > 0 && (
+        {safeOriginals.length > 0 && (
           <div className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[320px] rounded-xl border-2 overflow-hidden border-amber-300 bg-amber-50">
-            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setZoomedImage(originalImages[0])}>
-              <img src={originalImages[0]} alt="Original" className="w-full h-full object-cover" />
+            <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-pointer" onClick={() => setZoomedImage(safeOriginals[0])}>
+              <img src={safeOriginals[0]} alt="Original" className="w-full h-full object-cover" />
               <span className="absolute top-2 left-2 bg-amber-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow">ORIGINAL</span>
               <span className="absolute bottom-2 right-2 bg-black/40 text-white rounded-full p-1"><ZoomIn size={14} /></span>
             </div>
             <div className="p-3">
               <h3 className="font-bold text-sm text-amber-800 mb-1">Foto Original</h3>
-              <p className="text-xs text-gray-500">Estado actual del espacio. Compara con las alternativas de dise\u00f1o.</p>
-              {originalImages.length > 1 && (
+              <p className="text-xs text-gray-500">Estado actual del espacio. Compara con las alternativas de diseño.</p>
+              {safeOriginals.length > 1 && (
                 <div className="flex gap-1 mt-2">
-                  {originalImages.slice(1).map((img, i) => (
+                  {safeOriginals.slice(1).map((img, i) => (
                     <img key={i} src={img} alt={`Original ${i+2}`} className="h-10 w-10 rounded object-cover border cursor-pointer hover:ring-2 ring-amber-400" onClick={() => setZoomedImage(img)} />
                   ))}
                 </div>
@@ -87,7 +90,7 @@ export default function AlternativeCarousel({ alternatives = [], artifacts = [],
           </div>
         )}
 
-        {alternatives?.map((alt, idx) => {
+        {safeAlternatives.map((alt, idx) => {
           const colors = CARD_COLORS[idx] || CARD_COLORS[0];
           const artifact = getArtifactForIndex(idx);
           const isExpanded = expanded === idx;
@@ -166,7 +169,7 @@ export default function AlternativeCarousel({ alternatives = [], artifacts = [],
 
       {/* Dot indicators for mobile */}
       <div className="flex justify-center gap-1.5 mt-2 md:hidden">
-        {alternatives?.map((_, idx) => (
+        {safeAlternatives.map((_, idx) => (
           <div
             key={idx}
             className={`w-1.5 h-1.5 rounded-full ${

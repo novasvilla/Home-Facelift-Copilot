@@ -50,31 +50,41 @@ export default function ChatPanel({ project, section }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Persist messages + artifacts to localStorage per section
+  const storageKey = sessionId ? `facelift_chat_${userId}_${sessionId}` : null;
+
+  const serializeMessages = useCallback((items) =>
+    items.map(({ image, ...rest }) => rest),
+  []);
+
+  // Persist messages + artifacts to localStorage per section (without base64 images)
   useEffect(() => {
-    if (sessionId && messages.length > 0) {
-      const key = `facelift_chat_${userId}_${sessionId}`;
-      localStorage.setItem(key, JSON.stringify({ messages, artifacts, originalImages }));
+    if (!storageKey || messages.length === 0) return;
+    try {
+      const payload = {
+        messages: serializeMessages(messages),
+        artifacts,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch (err) {
+      console.warn('Failed to persist chat history', err);
+      localStorage.removeItem(storageKey);
     }
-  }, [messages, artifacts, originalImages, userId, sessionId]);
+  }, [messages, artifacts, storageKey, serializeMessages]);
 
   // Load persisted messages + artifacts on mount
   useEffect(() => {
-    if (sessionId) {
-      const key = `facelift_chat_${userId}_${sessionId}`;
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        try {
-          const { messages: m, artifacts: a, originalImages: o } = JSON.parse(stored);
-          if (m) setMessages(m);
-          if (a) setArtifacts(a);
-          if (o) setOriginalImages(o);
-        } catch (e) {
-          console.warn('Failed to load persisted chat', e);
-        }
-      }
+    if (!storageKey) return;
+    const stored = localStorage.getItem(storageKey);
+    if (!stored) return;
+    try {
+      const { messages: m, artifacts: a } = JSON.parse(stored);
+      if (Array.isArray(m) && m.length > 0) setMessages(m);
+      if (Array.isArray(a)) setArtifacts(a);
+    } catch (e) {
+      console.warn('Failed to load persisted chat', e);
+      localStorage.removeItem(storageKey);
     }
-  }, [sessionId, userId]);
+  }, [storageKey]);
 
   const addArtifact = useCallback(
     (name) => {
